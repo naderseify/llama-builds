@@ -1,0 +1,42 @@
+name: Build Windows EXE with OpenCL
+
+on:
+  workflow_dispatch:  # اجرای دستی
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      
+    - name: Clone llama.cpp
+      run: |
+        git clone https://github.com/ggerganov/llama.cpp --depth=1
+        cd llama.cpp
+        git submodule update --init --recursive
+        
+    - name: Build with OpenCL
+      run: |
+        cd llama.cpp
+        mkdir build && cd build
+        cmake .. `
+          -DLLAMA_CLBLAST=ON `
+          -DGGML_OPENCL=ON `
+          -DBUILD_SHARED_LIBS=OFF `
+          -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release --parallel 4
+        
+    - name: Upload Windows EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: llama-windows-opencl
+        path: |
+          llama.cpp/build/bin/*.exe
+          llama.cpp/build/bin/*.dll
