@@ -1,0 +1,12 @@
+name: CI Starter
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 GitHub Actions فعال شد!"
